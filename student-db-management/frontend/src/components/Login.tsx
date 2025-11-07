@@ -1,21 +1,45 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
+interface User {
+  username: string;
+  email: string;
+  password: string;
+}
+
 export default function Login() {
-  const [username, setUsername] = useState("");
+  const [identifier, setIdentifier] = useState(""); // username or email
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Simple login check
-    if (username === "admin" && password === "admin123") {
-      localStorage.setItem("loggedIn", "true");
-      navigate("/home"); // Redirect to Home page
-    } else {
-      alert("❌ Invalid username or password!");
+    if (!identifier || !password) {
+      alert("❌ Please enter your username/email and password");
+      return;
     }
+
+    const users: User[] = JSON.parse(localStorage.getItem("users") || "[]");
+
+    // Check if user exists (can login with username OR email)
+    const validUser = users.find(
+      (u) =>
+        (u.username === identifier || u.email === identifier) &&
+        u.password === password
+    );
+
+    if (!validUser) {
+      alert("❌ Invalid username/email or password!");
+      return;
+    }
+
+    // ✅ Save login status
+    localStorage.setItem("loggedIn", "true");
+    localStorage.setItem("currentUser", JSON.stringify(validUser));
+
+    alert(`✅ Welcome back, ${validUser.username}!`);
+    navigate("/home"); // Redirect to home page
   };
 
   return (
@@ -29,13 +53,15 @@ export default function Login() {
         </h2>
 
         <div className="mb-4">
-          <label className="block text-sm font-medium mb-1">Username</label>
+          <label className="block text-sm font-medium mb-1">
+            Username or Email
+          </label>
           <input
             type="text"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
+            value={identifier}
+            onChange={(e) => setIdentifier(e.target.value)}
             className="w-full border rounded px-3 py-2"
-            placeholder="Enter username"
+            placeholder="Enter username or email"
           />
         </div>
 
@@ -57,7 +83,6 @@ export default function Login() {
           Login
         </button>
 
-        {/* ✅ Register and Forgot Password options */}
         <div className="mt-4 text-center text-sm text-gray-600">
           <p>
             Don’t have an account?{" "}

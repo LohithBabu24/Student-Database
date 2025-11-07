@@ -7,6 +7,8 @@ import {
 } from "react-router-dom";
 
 import Login from "./components/Login";
+import Register from "./pages/Register";
+import ForgotPassword from "./pages/ForgotPassword";
 import Home from "./components/Home";
 import StudentForm from "./components/StudentForm";
 import StudentDetails from "./components/StudentDetails";
@@ -21,10 +23,12 @@ export default function App() {
   return (
     <Router>
       <Routes>
-        {/* Public route */}
+        {/* ✅ Public Routes */}
         <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
 
-        {/* Protected routes (only after login) */}
+        {/* ✅ Protected Routes */}
         <Route
           path="/home"
           element={
@@ -50,7 +54,7 @@ export default function App() {
           }
         />
 
-        {/* Default redirect based on login status */}
+        {/* ✅ Default Redirect */}
         <Route
           path="/"
           element={
@@ -62,7 +66,7 @@ export default function App() {
           }
         />
 
-        {/* Catch invalid routes */}
+        {/* ✅ Catch invalid routes */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Router>
