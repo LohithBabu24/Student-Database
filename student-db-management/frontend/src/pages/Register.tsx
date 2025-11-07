@@ -1,19 +1,16 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-interface User {
-  username: string;
-  email: string;
-  password: string;
-}
+const API_URL = "http://127.0.0.1:5000/api/users/register";
 
 export default function Register() {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleRegister = (e: React.FormEvent) => {
+  const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!username || !email || !password) {
@@ -21,21 +18,31 @@ export default function Register() {
       return;
     }
 
-    const existingUsers: User[] = JSON.parse(localStorage.getItem("users") || "[]");
+    try {
+      setLoading(true);
+      const res = await fetch(API_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ username, email, password }),
+      });
 
-    const usernameExists = existingUsers.some((user) => user.username === username);
-    const emailExists = existingUsers.some((user) => user.email === email);
+      const data = await res.json();
 
-    if (usernameExists || emailExists) {
-      alert("❌ Username or email already exists!");
-      return;
+      if (!res.ok) {
+        alert(`❌ ${data.error || "Registration failed"}`);
+        return;
+      }
+
+      alert("✅ Registration successful! You can now login.");
+      navigate("/login");
+    } catch (error) {
+      console.error("Registration error:", error);
+      alert("❌ Failed to register. Check your backend connection.");
+    } finally {
+      setLoading(false);
     }
-
-    const newUser: User = { username, email, password };
-    localStorage.setItem("users", JSON.stringify([...existingUsers, newUser]));
-
-    alert("✅ Registration successful! You can now login.");
-    navigate("/login");
   };
 
   return (
@@ -83,9 +90,10 @@ export default function Register() {
 
         <button
           type="submit"
+          disabled={loading}
           className="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700 transition"
         >
-          Register
+          {loading ? "Registering..." : "Register"}
         </button>
 
         <div className="mt-4 text-center text-sm text-gray-600">

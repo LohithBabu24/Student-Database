@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import type { Student } from "../types/student";
 
 export default function StudentDetails() {
+  const API_URL = "http://127.0.0.1:5000/api/students/";
+
   const [students, setStudents] = useState<Student[]>([]);
   const [filteredStudents, setFilteredStudents] = useState<Student[]>([]);
   const [editingStudent, setEditingStudent] = useState<Student | null>(null);
@@ -16,11 +18,10 @@ export default function StudentDetails() {
   useEffect(() => {
     const fetchStudents = async () => {
       try {
-        const res = await fetch("http://127.0.0.1:5000/students/");
+        const res = await fetch(API_URL);
         if (!res.ok) throw new Error("Failed to fetch students");
         const data = await res.json();
 
-        // ✅ Assign serial numbers permanently
         const numbered = data.map((student: Student, index: number) => ({
           ...student,
           serialNo: index + 1,
@@ -61,13 +62,12 @@ export default function StudentDetails() {
   const handleDelete = async (id: string) => {
     if (!window.confirm("Are you sure you want to delete this student?")) return;
     try {
-      const res = await fetch(`http://127.0.0.1:5000/students/${id}`, {
+      const res = await fetch(`${API_URL}${id}`, {
         method: "DELETE",
       });
       if (!res.ok) throw new Error("Failed to delete");
       const updated = students.filter((s: any) => s._id !== id);
 
-      // 🔢 Reassign serial numbers after delete
       const renumbered = updated.map((s, i) => ({ ...s, serialNo: i + 1 }));
 
       setStudents(renumbered);
@@ -88,14 +88,11 @@ export default function StudentDetails() {
   const handleUpdate = async () => {
     if (!editingStudent) return;
     try {
-      const res = await fetch(
-        `http://127.0.0.1:5000/students/${(editingStudent as any)._id}`,
-        {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(editingStudent),
-        }
-      );
+      const res = await fetch(`${API_URL}${editingStudent._id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(editingStudent),
+      });
       if (!res.ok) throw new Error("Failed to update");
       const updated = await res.json();
 

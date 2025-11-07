@@ -1,30 +1,14 @@
-from flask import Flask, jsonify
+from flask import Flask
 from flask_cors import CORS
-from routes.student_routes import bp as student_bp
-import os
+from utils.db_connection import client
+from routes.student_routes import bp as students_bp
+from routes.users import bp as users_bp
 
-# ---------------------------------------------------------
-# Initialize Flask app
-# ---------------------------------------------------------
 app = Flask(__name__)
-CORS(app)  # Allow frontend (React) requests
+CORS(app)
 
-# ---------------------------------------------------------
-# Register Blueprints (Routes)
-# ---------------------------------------------------------
-from routes.student_routes import bp as student_bp
-app.register_blueprint(student_bp, url_prefix="/students")
+app.register_blueprint(students_bp, url_prefix="/api/students")
+app.register_blueprint(users_bp, url_prefix="/api/users")
 
-# ---------------------------------------------------------
-# Health Check Route
-# ---------------------------------------------------------
-@app.route("/")
-def home():
-    return jsonify({"status": "ok", "message": "Student DB API running!"})
-
-# ---------------------------------------------------------
-# Run the Flask app
-# ---------------------------------------------------------
 if __name__ == "__main__":
-    port = int(os.getenv("PORT", 5000))
-    app.run(host="0.0.0.0", port=port, debug=True)
+    app.run(debug=True)

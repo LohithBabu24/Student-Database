@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import type { Student } from "../types/student";
 
+const API_URL = "http://127.0.0.1:5000/api/students/"; // ✅ Centralized backend URL
+
 export default function StudentForm() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -14,7 +16,7 @@ export default function StudentForm() {
     e.preventDefault();
 
     if (!name || !email || !age) {
-      alert("Please fill all required fields");
+      alert("⚠️ Please fill all required fields");
       return;
     }
 
@@ -27,7 +29,8 @@ export default function StudentForm() {
 
     try {
       setLoading(true);
-      const res = await fetch("http://127.0.0.1:5000/students/", {
+
+      const response = await fetch(API_URL, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -35,16 +38,18 @@ export default function StudentForm() {
         body: JSON.stringify(newStudent),
       });
 
-      if (!res.ok) {
+      if (!response.ok) {
+        const errText = await response.text();
+        console.error("Server error:", errText);
         throw new Error("Failed to add student");
       }
 
-      await res.json();
+      await response.json();
       alert("✅ Student added successfully!");
       navigate("/details");
     } catch (error) {
-      console.error(error);
-      alert("❌ Error adding student. Check console.");
+      console.error("❌ Error adding student:", error);
+      alert("❌ Failed to add student. Check console for details.");
     } finally {
       setLoading(false);
     }
@@ -56,7 +61,9 @@ export default function StudentForm() {
         onSubmit={handleSubmit}
         className="space-y-3 p-4 bg-white rounded shadow w-96"
       >
-        <h2 className="text-xl font-semibold mb-2">Register Student</h2>
+        <h2 className="text-xl font-semibold mb-2 text-center">
+          Register Student
+        </h2>
 
         <div>
           <label className="block text-sm font-medium">Name</label>
@@ -64,15 +71,18 @@ export default function StudentForm() {
             value={name}
             onChange={(e) => setName(e.target.value)}
             className="mt-1 block w-full rounded border px-2 py-1"
+            placeholder="Enter name"
           />
         </div>
 
         <div>
           <label className="block text-sm font-medium">Email</label>
           <input
+            type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             className="mt-1 block w-full rounded border px-2 py-1"
+            placeholder="Enter email"
           />
         </div>
 
@@ -85,6 +95,7 @@ export default function StudentForm() {
               setAge(e.target.value === "" ? "" : Number(e.target.value))
             }
             className="mt-1 block w-full rounded border px-2 py-1"
+            placeholder="Enter age"
           />
         </div>
 
@@ -94,13 +105,16 @@ export default function StudentForm() {
             value={course}
             onChange={(e) => setCourse(e.target.value)}
             className="mt-1 block w-full rounded border px-2 py-1"
+            placeholder="Enter course name"
           />
         </div>
 
         <button
           type="submit"
           disabled={loading}
-          className="px-4 py-2 rounded bg-blue-600 text-white w-full"
+          className={`px-4 py-2 rounded text-white w-full ${
+            loading ? "bg-gray-400" : "bg-blue-600 hover:bg-blue-700"
+          }`}
         >
           {loading ? "Adding..." : "Add Student"}
         </button>
